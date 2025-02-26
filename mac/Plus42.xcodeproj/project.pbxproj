@@ -1031,6 +1031,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DFREE42_FPTEST";
 				"OTHER_CFLAGS[arch=arm64]" = (
 					"-DFREE42_FPTEST",
+					"-ffp-contract=off",
 					"-fsigned-char",
 					"-DBID_SIZE_LONG=8",
 				);
@@ -1073,6 +1074,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				"OTHER_CFLAGS[arch=arm64]" = (
+					"-ffp-contract=off",
 					"-fsigned-char",
 					"-DBID_SIZE_LONG=8",
 				);
@@ -1411,6 +1413,7 @@
 				"OTHER_CFLAGS[arch=*]" = "-DFREE42_FPTEST";
 				"OTHER_CFLAGS[arch=arm64]" = (
 					"-DFREE42_FPTEST",
+					"-ffp-contract=off",
 					"-fsigned-char",
 					"-DBID_SIZE_LONG=8",
 				);
@@ -1469,6 +1472,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				"OTHER_CFLAGS[arch=arm64]" = (
+					"-ffp-contract=off",
 					"-fsigned-char",
 					"-DBID_SIZE_LONG=8",
 				);
