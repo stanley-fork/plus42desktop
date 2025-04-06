@@ -361,7 +361,7 @@ void keydown(int shift, int key) {
                     return;
                 }
                 vartype_real *x = (vartype_real *) stack[sp];
-                vartype *new_x = new_unit(x->x, u.c_str(), u.length());
+                vartype *new_x = new_unit(x->x, u.c_str(), (int) u.length());
                 if (new_x == NULL) {
                     squeak();
                 } else {
@@ -2254,7 +2254,7 @@ void keydown_command_entry(int shift, int key) {
                 int catsect;
                 if (mode_commandmenu == MENU_NONE
                         || (mode_commandmenu == MENU_CATALOG
-                            && (catsect = get_cat_section()) == CATSECT_TOP
+                            && ((catsect = get_cat_section()) == CATSECT_TOP
                             || catsect == CATSECT_MORE
                             || catsect == CATSECT_EXT_1
                             || catsect == CATSECT_EXT_2
@@ -2266,7 +2266,7 @@ void keydown_command_entry(int shift, int key) {
                             || catsect == CATSECT_EQN_ONLY
                             || catsect == CATSECT_VARS_ONLY
                             || catsect == CATSECT_LIST_STR_ONLY
-                            || catsect == CATSECT_DIRS_ONLY)) {
+                            || catsect == CATSECT_DIRS_ONLY))) {
                     set_menu(MENULEVEL_COMMAND, MENU_ALPHA1);
                     redisplay();
                     return;
@@ -3446,7 +3446,7 @@ void keydown_normal_mode(int shift, int key) {
                                 s = std::string("1/(", 3) + s + ")";
                                 normalize_unit(s, &s);
                             }
-                            res = new_unit(((vartype_real *) v)->x, s.c_str(), s.length());
+                            res = new_unit(((vartype_real *) v)->x, s.c_str(), (int) s.length());
                             if (res == NULL)
                                 goto unit_fail;
                             unit_success:
@@ -3471,7 +3471,7 @@ void keydown_normal_mode(int shift, int key) {
                             if (!normalize_unit(us, &s))
                                 // should be impossible
                                 goto unit_fail;
-                            res = new_unit(u->x, s.c_str(), s.length());
+                            res = new_unit(u->x, s.c_str(), (int) s.length());
                             if (res == NULL)
                                 goto unit_fail;
                             goto unit_success;

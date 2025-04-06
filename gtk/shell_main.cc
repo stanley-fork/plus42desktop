@@ -37,8 +37,12 @@
 #include "shell_spool.h"
 #include "core_main.h"
 #include "core_display.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 #include "icon-128x128.xpm"
 #include "icon-48x48.xpm"
+#pragma GCC diagnostic pop
 
 #ifndef _POSIX_HOST_NAME_MAX
 #define _POSIX_HOST_NAME_MAX 255
@@ -175,7 +179,7 @@ static void copyPrintAsTextCB();
 static void copyPrintAsImageCB();
 static void clearPrintOutCB();
 static void preferencesCB();
-static void appendSuffix(char *path, char *suffix);
+static void appendSuffix(char *path, const char *suffix);
 static void copyCB();
 static void pasteCB();
 static void documentationCB();
@@ -2457,7 +2461,7 @@ static void preferencesCB() {
     gtk_widget_hide(GTK_WIDGET(dialog));
 }
 
-static void appendSuffix(char *path, char *suffix) {
+static void appendSuffix(char *path, const char *suffix) {
     int len = strlen(path);
     int slen = strlen(suffix);
     if (len == 0 || len >= FILENAMELEN - slen)
@@ -3163,12 +3167,11 @@ void shell_blitter(const char *bits, int bytesperline, int x, int y,
     }
 }
 
-const int tone_freqs[] = { 165, 220, 247, 277, 294, 330, 370, 415, 440, 554, 1865 };
-
 void shell_beeper(int tone) {
 #ifdef AUDIO_ALSA
     const char *display_name = gdk_display_get_name(gdk_display_get_default());
     if (display_name == NULL || display_name[0] == ':') {
+        const int tone_freqs[] = { 165, 220, 247, 277, 294, 330, 370, 415, 440, 554, 1865 };
         int frequency = tone_freqs[tone];
         int duration = tone == 10 ? 125 : 250;
         if (!alsa_beeper(frequency, duration))

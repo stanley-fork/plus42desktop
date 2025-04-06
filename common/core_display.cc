@@ -38,14 +38,6 @@
 /* HP-42S font data */
 /********************/
 
-#if defined(WINDOWS) && !defined(__GNUC__)
-/* Disable warnings:
- * C4838: conversion from 'int' to 'const char' requires a narrowing conversion
- */
-#pragma warning(push)
-#pragma warning(disable:4838)
-#endif
-
 
 static const unsigned char bigchars[138][5] =
     {
@@ -612,11 +604,6 @@ static const unsigned char smallchars_map[138] =
         /* 137 */ 135,
     };
 
-#if defined(WINDOWS) && !defined(__GNUC__)
-#pragma warning(pop)
-#endif
-
-
 
 static char *display = NULL;
 static int disp_bpl;
@@ -725,12 +712,12 @@ bool persist_display() {
     if (!write_int(appmenu_exitcallback)) return false;
     if (fwrite(special_key, 1, 6, gfile) != 6)
         return false;
-    int mcount = messages.size();
+    int mcount = (int) messages.size();
     if (!write_int(mcount))
         return false;
     for (int i = 0; i < mcount; i++) {
         std::string m = messages[i];
-        int ml = m.length();
+        int ml = (int) m.length();
         if (!write_int2(ml))
             return false;
         if (fwrite(m.c_str(), 1, ml, gfile) != ml)
@@ -1681,8 +1668,8 @@ static int prgmline2buf(char *buf, int len, int4 line, int highlight,
             char2buf(buf, len, &bufptr, '0');
         bufptr += int2string(line, buf + bufptr, len - bufptr);
         char h = highlight == 0 ? ' '
-                : highlight == 2 && !current_prgm.is_editable() ? 134
-                : highlight == 2 && current_prgm.is_locked() ? 135
+                : highlight == 2 && !current_prgm.is_editable() ? (char) 134
+                : highlight == 2 && current_prgm.is_locked() ? (char) 135
                 : 6;
         char2buf(buf, len, &bufptr, h);
     }
@@ -1842,7 +1829,7 @@ void tb_print_current_program(textbuf *tb) {
         char *buf2 = xstr == NULL ? buf : xstr;
         for (int i = 0; i < len; i++)
             if (buf2[i] == 10)
-                buf2[i] = 138;
+                buf2[i] = (char) 138;
         int off = 0;
         while (len > 0) {
             int slen = len <= 100 ? len : 100;
@@ -1894,7 +1881,7 @@ static int display_prgm_line(int offset, int headers = 0, int footers = 0) {
             buf += std::string(cmdline, cmdline_length);
             buf += '_';
         } else {
-            int cmd;
+            int cmd = CMD_NONE;
             arg_struct arg;
             const char *orig_num;
             if (line > 0) {
@@ -1936,7 +1923,7 @@ static int display_prgm_line(int offset, int headers = 0, int footers = 0) {
         int maxlength = lines * disp_c;
         if (buf.length() > maxlength)
             buf = buf.substr(0, maxlength - 1) + "\32";
-        lines = (buf.length() + disp_c - 1) / disp_c;
+        lines = ((int) buf.length() + disp_c - 1) / disp_c;
 
         if (!show && offset == 0) {
             int excess = row + lines + footers - disp_r;
@@ -1953,7 +1940,7 @@ static int display_prgm_line(int offset, int headers = 0, int footers = 0) {
 
         int pos = 0;
         const char *p = buf.c_str();
-        int len = buf.length();
+        int len = (int) buf.length();
         for (int i = row; i < row + lines; i++) {
             clear_row(i);
             int end = pos + disp_c;
@@ -2234,10 +2221,10 @@ static int display_x(int row, int lines_available) {
             }
         }
 
-        int lines = (line.length() + disp_c - 1) / disp_c;
+        int lines = ((int) line.length() + disp_c - 1) / disp_c;
         int pos = 0;
         const char *p = line.c_str();
-        int len = line.length();
+        int len = (int) line.length();
         for (int i = row + 1 - lines; i <= row; i++) {
             clear_row(i);
             int end = pos + disp_c;
@@ -2323,11 +2310,11 @@ static int display_incomplete_command(int row, int available_lines) {
     int maxlen = disp_c * available_lines;
     if (buf.length() > maxlen)
         buf = std::string("\32", 1) + buf.substr(buf.length() - maxlen + 1);
-    int lines = (buf.length() + disp_c - 1) / disp_c;
+    int lines = ((int) buf.length() + disp_c - 1) / disp_c;
     int pos = 0;
     const char *p = buf.c_str();
     for (int i = 0; i < lines; i++) {
-        int len = buf.length() - pos;
+        int len = (int) buf.length() - pos;
         if (len > disp_c)
             len = disp_c;
         int r = row - lines + i + 1;
@@ -2450,11 +2437,11 @@ int display_command(int row, int available_lines) {
         int maxlen = disp_c * available_lines;
         if (buf.length() > maxlen)
             buf = buf.substr(0, maxlen - 1) + std::string("\32", 1);
-        int lines = (buf.length() + disp_c - 1) / disp_c;
+        int lines = ((int) buf.length() + disp_c - 1) / disp_c;
         int pos = 0;
         const char *p = buf.c_str();
         for (int i = 0; i < lines; i++) {
-            int len = buf.length() - pos;
+            int len = (int) buf.length() - pos;
             if (len > disp_c)
                 len = disp_c;
             int r = row == 0 ? i : row - lines + i + 1;
@@ -2985,7 +2972,7 @@ static void draw_catalog() {
                 }
             } while (dir != NULL);
 
-            catalogmenu_rows[catindex] = (names.size() + 5) / 6;
+            catalogmenu_rows[catindex] = ((int) names.size() + 5) / 6;
             if (catalogmenu_row[catindex] >= catalogmenu_rows[catindex])
                 catalogmenu_row[catindex] = catalogmenu_rows[catindex] - 1;
             int row = catalogmenu_row[catindex];
@@ -2993,7 +2980,7 @@ static void draw_catalog() {
             for (int k = 0; k < 6; k++) {
                 int n = k + row * 6;
                 if (n < names.size()) {
-                    draw_key(k, 0, 0, names[n].c_str(), names[n].length(), items[n] == -2 || n >= nlocal);
+                    draw_key(k, 0, 0, names[n].c_str(), (int) names[n].length(), items[n] == -2 || n >= nlocal);
                     catalogmenu_dir[catindex][k] = dirs[n];
                     catalogmenu_item[catindex][k] = items[n];
                 } else {
@@ -3062,7 +3049,7 @@ static void draw_catalog() {
             display_error(ERR_INSUFFICIENT_MEMORY);
             goto draw_other;
         }
-        int n = eqns.size();
+        int n = (int) eqns.size();
         int rows = (n + 5) / 6;
         if (rows == 0) {
             set_cat_section(CATSECT_MORE);
@@ -3076,7 +3063,7 @@ static void draw_catalog() {
             int j = row * 6 + i;
             if (j < n) {
                 std::string s = eqns[j];
-                draw_key(i, 0, 0, s.c_str(), s.length());
+                draw_key(i, 0, 0, s.c_str(), (int) s.length());
             } else
                 draw_key(i, 0, 0, "", 0);
         }
@@ -3323,14 +3310,14 @@ static void draw_catalog() {
                 }
             }
 
-            catalogmenu_rows[catindex] = (items.size() + 5) / 6;
+            catalogmenu_rows[catindex] = ((int) items.size() + 5) / 6;
             if (catalogmenu_row[catindex] >= catalogmenu_rows[catindex])
                 catalogmenu_row[catindex] = catalogmenu_rows[catindex] - 1;
             int row = catalogmenu_row[catindex];
             for (int k = 0; k < 6; k++) {
                 int n = k + row * 6;
                 if (n < names.size()) {
-                    draw_key(k, 0, 0, names[n].c_str(), names[n].length(), n >= nlocal);
+                    draw_key(k, 0, 0, names[n].c_str(), (int) names[n].length(), n >= nlocal);
                     catalogmenu_dir[catindex][k] = dirs[n];
                     catalogmenu_item[catindex][k] = items[n];
                 } else {
@@ -3414,7 +3401,7 @@ void get_units_cat_row(int catsect, const char *text[6], int length[6], int *row
     int i = 0;
     int off = 0;
     while (true) {
-        int len = strlen(mtext + off);
+        int len = (int) strlen(mtext + off);
         if (len == 0)
             break;
         if (i >= n && i < n + 6) {
@@ -3613,7 +3600,7 @@ void show() {
                 try {
                     std::string s;
                     full_real_matrix_to_string(rx, &s, disp_r);
-                    string_copy(buf, &bufptr, s.c_str(), s.length());
+                    string_copy(buf, &bufptr, s.c_str(), (int) s.length());
                 } catch (std::bad_alloc &) {
                     string_copy(buf, &bufptr, "<Low Mem>", 9);
                 }
@@ -3636,7 +3623,7 @@ void show() {
                 try {
                     std::string s;
                     full_complex_matrix_to_string(rx, &s, disp_r);
-                    string_copy(buf, &bufptr, s.c_str(), s.length());
+                    string_copy(buf, &bufptr, s.c_str(), (int) s.length());
                 } catch (std::bad_alloc &) {
                     string_copy(buf, &bufptr, "<Low Mem>", 9);
                 }
@@ -3685,7 +3672,7 @@ void show() {
                         s.erase(maxlen - 1);
                         s += "\32";
                     }
-                    string_copy(buf, &bufptr, s.c_str(), s.length());
+                    string_copy(buf, &bufptr, s.c_str(), (int) s.length());
                 } catch (std::bad_alloc &) {
                     string_copy(buf, &bufptr, "<Low Mem>", 9);
                 }
@@ -3802,7 +3789,7 @@ bool display_header() {
         }
         path = std::string("{ HOME ", 7) + path;
         done:
-        draw_small_string(0, -2, path.c_str(), path.length(), disp_w - app_w, false, true);
+        draw_small_string(0, -2, path.c_str(), (int) path.length(), disp_w - app_w, false, true);
     } catch (std::bad_alloc &) {
         draw_small_string(0, -2, "<Low Mem>", 9, disp_w - app_w);
     }
@@ -3952,7 +3939,7 @@ void redisplay(int mode) {
             clear_row(i);
             if (i < messages.size()) {
                 std::string s = messages[i];
-                draw_string(0, i, s.c_str(), s.length());
+                draw_string(0, i, s.c_str(), (int) s.length());
             }
         }
 

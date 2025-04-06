@@ -21,11 +21,8 @@ CXX_FOR_BUILD ?= $(CXX)
 CFLAGS += -MMD \
 	 -Wall \
 	 -Wno-parentheses \
-	 -Wno-write-strings \
 	 -Wno-sign-compare \
-	 -Wno-sometimes-uninitialized \
 	 -Wno-format-truncation \
-	 -Wno-class-memaccess \
 	 -Wno-unknown-warning-option \
 	 -Wno-unknown-pragmas \
 	 -g \
