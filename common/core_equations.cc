@@ -1084,6 +1084,30 @@ static bool get_object_text(const char **text, int *length) {
     }
 }
 
+static int get_object_type() {
+    // 0: Invalid, 1: XSTR, 2: PLAIN, 3: EVAL
+    if (edit_mode == 0 ? saved_prgm_mode : flags.f.prgm_mode) {
+        int cmd;
+        arg_struct arg;
+        int4 pc2 = pc;
+        get_next_command(&pc2, &cmd, &arg, 0, NULL);
+        if (cmd == CMD_XSTR)
+            return 1;
+        else if (cmd == CMD_EMBED)
+            return arg.type == ARGTYPE_NUM ? 2 : 3;
+        else
+            return 0;
+    } else {
+        vartype *v = stack[sp];
+        if (v->type == TYPE_STRING)
+            return 1;
+        else if (v->type == TYPE_EQUATION)
+            return 2;
+        else
+            return 0;
+    }
+}
+
 static int start_standalone_edit(const char *text, int length) {
     edit_buf = (char *) malloc(length);
     if (edit_buf == NULL && length != 0) {
@@ -1113,6 +1137,7 @@ static void end_standalone_edit() {
     free(edit_buf);
     edit_buf = NULL;
     edit_capacity = edit_len = 0;
+    dialog = DIALOG_NONE;
     active = false;
     redisplay();
 }
@@ -1393,7 +1418,9 @@ bool eqn_draw() {
         draw_string(0, 0, err_text, err_len);
         if (current_error_is_runtime)
             eqn_display_error(true);
-        if (current_error == ERR_INVALID_EQUATION) {
+        if (current_error != ERR_INVALID_EQUATION) {
+            draw_key(1, 0, 0, "OK", 2);
+        } else if (edit_mode == 0) {
             draw_eqn_menu:
             draw_key(0, 0, 0, "CALC", 4);
             draw_key(1, 0, 0, "EDIT", 4);
@@ -1401,8 +1428,7 @@ bool eqn_draw() {
             draw_key(3, 0, 0, "NEW", 3);
             draw_key(4, 0, 0, "^", 1, true);
             draw_key(5, 0, 0, "\16", 1, true);
-        } else
-            draw_key(1, 0, 0, "OK", 2);
+        }
     } else if (dialog == DIALOG_SAVE_CONFIRM) {
         draw_string(0, 0, "Save this equation?", 19);
         draw_key(0, 0, 0, "YES", 3);
@@ -1438,15 +1464,32 @@ bool eqn_draw() {
     } else if (dialog == DIALOG_STO_INSERT_PRGM_EQN_EVAL_XSTR
             || dialog == DIALOG_STO_OVERWRITE_PRGM_EQN_EVAL_XSTR) {
         draw_string(0, 0, "Plain, EVAL, or XSTR?", 21);
-        draw_key(0, 0, 0, "PLAIN", 5);
-        draw_key(1, 0, 0, "EVAL", 4);
-        draw_key(2, 0, 0, "XSTR", 4);
+        int type = dialog == DIALOG_STO_INSERT_PRGM_EQN_EVAL_XSTR ? 0 : get_object_type();
+        if (type == 2)
+            draw_key(0, 0, 1, "PLAI\316\37", 6);
+        else
+            draw_key(0, 0, 0, "PLAIN", 5);
+        if (type == 3)
+            draw_key(1, 0, 0, "EVAL\37", 5);
+        else
+            draw_key(1, 0, 0, "EVAL", 4);
+        if (type == 1)
+            draw_key(2, 0, 0, "XSTR\37", 5);
+        else
+            draw_key(2, 0, 0, "XSTR", 4);
         draw_key(4, 0, 0, "CNCL", 4);
     } else if (dialog == DIALOG_STO_INSERT_X_EQN_XSTR
             || dialog == DIALOG_STO_OVERWRITE_X_EQN_XSTR) {
         draw_string(0, 0, "Equation or XSTR?", 17);
-        draw_key(0, 0, 0, "EQN", 3);
-        draw_key(2, 0, 0, "XSTR", 4);
+        int type = dialog == DIALOG_STO_INSERT_X_EQN_XSTR ? 0 : get_object_type();
+        if (type == 2)
+            draw_key(0, 0, 0, "EQN\37", 4);
+        else
+            draw_key(0, 0, 0, "EQN", 3);
+        if (type == 1)
+            draw_key(2, 0, 0, "XSTR\37", 5);
+        else
+            draw_key(2, 0, 0, "XSTR", 4);
         draw_key(4, 0, 0, "CNCL", 4);
     } else if (dialog == DIALOG_MODES) {
         const command_spec *cs = cmd_array + dialog_cmd;
@@ -2098,6 +2141,10 @@ static int keydown_save_confirmation(int key, bool shift, int *repeat) {
         }
         case KEY_SQRT: {
             /* NO */
+            if (edit_mode != 0) {
+                end_standalone_edit();
+                return 1;
+            }
             free(edit_buf);
             edit_buf = NULL;
             edit_capacity = edit_len = 0;
@@ -2499,7 +2546,7 @@ static int keydown_sto_x_eqn_xstr(int key, bool shift, int *repeat) {
         case KEY_SIGMA: /* EQN */
         case KEY_SQRT: /* XSTR */ {
             vartype *v;
-            if (edit_pos != -1) {
+            if (edit_pos == -1) {
                 v = eqns->array->data[selected_row];
                 if (key == KEY_SIGMA || v->type == TYPE_STRING)
                     v = dup_vartype(v);
@@ -2516,9 +2563,10 @@ static int keydown_sto_x_eqn_xstr(int key, bool shift, int *repeat) {
                 v = new_equation(edit_buf, edit_len, flags.f.eqn_compat, &errpos);
                 if (v == NULL && errpos != -1) {
                     squeak();
+                    dialog = DIALOG_NONE;
                     show_error(ERR_INVALID_EQUATION);
                     current_error = ERR_NONE;
-                    timeout_action = 3;
+                    timeout_action = 4;
                     timeout_edit_pos = errpos;
                     shell_request_timeout3(1000);
                     return 1;
@@ -2580,9 +2628,10 @@ static int keydown_sto_prgm_eqn_eval_xstr(int key, bool shift, int *repeat) {
                         show_error(ERR_INSUFFICIENT_MEMORY);
                     } else {
                         squeak();
+                        dialog = DIALOG_NONE;
                         show_error(ERR_INVALID_EQUATION);
                         current_error = ERR_NONE;
-                        timeout_action = 3;
+                        timeout_action = 4;
                         timeout_edit_pos = errpos;
                         shell_request_timeout3(1000);
                     }
@@ -2784,30 +2833,34 @@ static void select_function_menu(int menu) {
     }
 }
 
+static void set_edit_pos(int pos) {
+    display_pos = 0;
+    edit_pos = pos;
+    if (disp_r == 2) {
+        if (pos > 12) {
+            display_pos = pos - 12;
+            int slop = edit_len - display_pos - disp_c;
+            if (slop < 0)
+                display_pos = edit_len >= disp_c ? edit_len - disp_c : 0;
+        }
+    } else {
+        int lines = disp_r - headers - 1;
+        int maxlen = lines * disp_c;
+        while (pos - display_pos > maxlen / 2)
+            display_pos += disp_c;
+        while (display_pos > 0 && edit_len - display_pos < maxlen - disp_c + 1)
+            display_pos -= disp_c;
+    }
+}
+
 static void start_edit(int pos) {
     if (!get_equation()) {
         show_error(ERR_INSUFFICIENT_MEMORY);
     } else {
         new_eq = false;
-        edit_pos = pos;
         edit_mode = 0;
         update_skin_mode();
-        display_pos = 0;
-        if (disp_r == 2) {
-            if (pos > 12) {
-                display_pos = pos - 12;
-                int slop = edit_len - display_pos - disp_c;
-                if (slop < 0)
-                    display_pos = edit_len >= disp_c ? edit_len - disp_c : 0;
-            }
-        } else {
-            int lines = disp_r - headers - 1;
-            int maxlen = lines * disp_c;
-            while (pos - display_pos > maxlen / 2)
-                display_pos += disp_c;
-            while (display_pos > 0 && edit_len - display_pos < maxlen - disp_c + 1)
-                display_pos -= disp_c;
-        }
+        set_edit_pos(pos);
         update_menu(MENU_NONE);
         restart_cursor();
         eqn_draw();
@@ -4267,6 +4320,14 @@ bool eqn_timeout() {
     } else if (action == 3) {
         /* Start editing after parse error message has timed out */
         start_edit(timeout_edit_pos);
+    } else if (action == 4) {
+        current_error = ERR_NONE;
+        dialog = DIALOG_NONE;
+        set_edit_pos(timeout_edit_pos);
+        cursor_on = true;
+        eqn_draw();
+        timeout_action = 2;
+        shell_request_timeout3(500);
     }
     return true;
 }
