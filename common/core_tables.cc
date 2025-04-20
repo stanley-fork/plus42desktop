@@ -53,17 +53,12 @@
  */
 #define UNIM 0x00
 
-// The Free42/Plus42 extensions use the following XROM codes, in addition
-// to those used by the HP-42S, HP-82182A Time Module, HP-41CX Time,
-// and HP-82180A Extended Functions / Memory Module (four functions)...
-// XROM 09,49-63 (a271-a27f) (Home Management)
-// XROM 27,46-63 (a6ee-a6ff) (Wand)
-// XROM 28,25-36 (a719-a724) (HP-IL Mass Storage)
-// XROM 30,37-63 (a7a5-a7bf) (Card Reader)
-// XROM 31,00-63 (a7c0-a7ff) (Data Logger)
-
-// Available XROMs: a7dc, a7dd, a7e0, a7fa, a7fb
-// Time Module: a681-a6a3, of which we're only using some; see below.
+// Available XROMs: a737-a735
+// When these run out, look for other ones in
+// Source: https://www.hpmuseum.org/software/xroms.htm
+// Make sure to check any new ranges against the codes already in use
+// here; the table at MoHPC does not cover the XROMs used by the
+// HP-42S itself!
 
 const command_spec cmd_array[] =
 {
@@ -411,16 +406,36 @@ const command_spec cmd_array[] =
     { /* LSTO */        docmd_lsto,        "LSTO",                0x00, 0xc7, 0xf2, 0xed,  4, ARG_NAMED,  1, ALLT },
     { /* SST_UP */      NULL,              "SST^",                0x40, 0x00, 0x00, 0x00,  4, ARG_NONE,   0, NA_T },
     { /* SST_RT */      NULL,              "SST\17",              0x40, 0x00, 0x00, 0x00,  4, ARG_NONE,   0, NA_T },
-    { /* WSIZE */       docmd_wsize,       "WSIZE",               0x00, 0x00, 0xa7, 0xd3,  5, ARG_NONE,   1, 0x01 },
-    { /* WSIZE_T */     docmd_wsize_t,     "WS\311Z\305?",        0x00, 0x00, 0xa7, 0xd4,  6, ARG_NONE,   0, NA_T },
     { /* YMD */         docmd_ymd,         "YMD",                 0x00, 0x00, 0xa7, 0xd5,  3, ARG_NONE,   0, NA_T },
-    { /* BSIGNED */     docmd_bsigned,     "BS\311GN\305\304",    0x00, 0x00, 0xa7, 0xd6,  7, ARG_NONE,   0, NA_T },
-    { /* BWRAP */       docmd_bwrap,       "BWR\301P",            0x00, 0x00, 0xa7, 0xd7,  5, ARG_NONE,   0, NA_T },
-    { /* BRESET */      docmd_breset,      "BR\305S\305T",        0x00, 0x00, 0xa7, 0xd8,  6, ARG_NONE,   0, NA_T },
     { /* GETKEY1 */     docmd_getkey1,     "G\305TK\305\3311",    0x00, 0x00, 0xa7, 0xd9,  7, ARG_NONE,   0, NA_T },
     { /* GETKEYA */     docmd_getkeya,     "G\305TK\305\331A",    0x00, 0x00, 0xa6, 0xee,  7, ARG_NONE,   0, NA_T },
     { /* LASTO */       docmd_lasto,       "LASTO",               0x00, 0xf5, 0xf2, 0xc8,  5, ARG_NAMED,  0, NA_T },
     { /* LCLV */        docmd_lclv,        "LCLV",                0x00, 0x71, 0xf2, 0x64,  4, ARG_NAMED,  0, NA_T },
+
+    /* BASE enhancements */
+    { /* SL */          docmd_sl,          "SL",                  0x00, 0x00, 0xa7, 0xdc,  2, ARG_NONE,   1, 0x01 },
+    { /* SR */          docmd_sr,          "SR",                  0x00, 0x00, 0xa7, 0xdd,  2, ARG_NONE,   1, 0x01 },
+    { /* RL */          docmd_rl,          "RL",                  0x00, 0x00, 0xa7, 0xe0,  2, ARG_NONE,   1, 0x01 },
+    { /* RR */          docmd_rr,          "RR",                  0x00, 0x00, 0xa7, 0xfa,  2, ARG_NONE,   1, 0x01 },
+    { /* RLC */         docmd_rlc,         "RLC",                 0x00, 0x00, 0xa7, 0xfb,  3, ARG_NONE,   1, 0x01 },
+    { /* RRC */         docmd_rrc,         "RRC",                 0x00, 0x00, 0xa7, 0x2a,  3, ARG_NONE,   1, 0x01 },
+    { /* LJ */          docmd_lj,          "LJ",                  0x00, 0x00, 0xa7, 0x2b,  2, ARG_NONE,   1, 0x01 },
+    { /* ASR */         docmd_asr,         "ASR",                 0x00, 0x00, 0xa7, 0x2c,  3, ARG_NONE,   1, 0x01 },
+    { /* RLN */         docmd_rln,         "RLN",                 0x00, 0x00, 0xa7, 0x2d,  3, ARG_NONE,   2, 0x01 },
+    { /* RRN */         docmd_rrn,         "RRN",                 0x00, 0x00, 0xa7, 0x2e,  3, ARG_NONE,   2, 0x01 },
+    { /* RLCN */        docmd_rlcn,        "RLCN",                0x00, 0x00, 0xa7, 0x2f,  4, ARG_NONE,   2, 0x01 },
+    { /* RRCN */        docmd_rrcn,        "RRCN",                0x00, 0x00, 0xa7, 0x30,  4, ARG_NONE,   2, 0x01 },
+    { /* SB */          docmd_sb,          "SB",                  0x00, 0x00, 0xa7, 0x31,  2, ARG_NONE,   2, 0x01 },
+    { /* CB */          docmd_cb,          "CB",                  0x00, 0x00, 0xa7, 0x32,  2, ARG_NONE,   2, 0x01 },
+    { /* B_T */         docmd_b_t,         "B?",                  0x00, 0x00, 0xa7, 0x33,  2, ARG_NONE,   2, 0x01 },
+    { /* NUM_B */       docmd_num_b,       "#B",                  0x00, 0x00, 0xa7, 0x34,  2, ARG_NONE,   1, 0x01 },
+    { /* MASKL */       docmd_maskl,       "M\301SKL",            0x00, 0x00, 0xa7, 0x35,  5, ARG_NONE,   1, 0x01 },
+    { /* MASKR */       docmd_maskr,       "M\301SKR",            0x00, 0x00, 0xa7, 0x36,  5, ARG_NONE,   1, 0x01 },
+    { /* WSIZE */       docmd_wsize,       "WSIZE",               0x00, 0x00, 0xa7, 0xd3,  5, ARG_NONE,   1, 0x01 },
+    { /* WSIZE_T */     docmd_wsize_t,     "WS\311Z\305?",        0x00, 0x00, 0xa7, 0xd4,  6, ARG_NONE,   0, NA_T },
+    { /* BSIGNED */     docmd_bsigned,     "BS\311GN\305\304",    0x00, 0x00, 0xa7, 0xd6,  7, ARG_NONE,   0, NA_T },
+    { /* BWRAP */       docmd_bwrap,       "BWR\301P",            0x00, 0x00, 0xa7, 0xd7,  5, ARG_NONE,   0, NA_T },
+    { /* BRESET */      docmd_breset,      "BR\305S\305T",        0x00, 0x00, 0xa7, 0xd8,  6, ARG_NONE,   0, NA_T },
 
     /* Useful X-Fcn functions missing from the 42S */
     { /* ANUM */        docmd_anum,        "ANUM",                0x00, 0x00, 0xa6, 0x42,  4, ARG_NONE,   0, NA_T },
