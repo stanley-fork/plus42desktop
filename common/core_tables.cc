@@ -53,7 +53,7 @@
  */
 #define UNIM 0x00
 
-// Available XROMs: a737-a735
+// Available XROMs: a73f
 // When these run out, look for other ones in
 // Source: https://www.hpmuseum.org/software/xroms.htm
 // Make sure to check any new ranges against the codes already in use
@@ -431,11 +431,29 @@ const command_spec cmd_array[] =
     { /* NUM_B */       docmd_num_b,       "#B",                  0x00, 0x00, 0xa7, 0x34,  2, ARG_NONE,   1, 0x01 },
     { /* MASKL */       docmd_maskl,       "M\301SKL",            0x00, 0x00, 0xa7, 0x35,  5, ARG_NONE,   1, 0x01 },
     { /* MASKR */       docmd_maskr,       "M\301SKR",            0x00, 0x00, 0xa7, 0x36,  5, ARG_NONE,   1, 0x01 },
+    { /* SC */          docmd_sc,          "SC",                  0x00, 0x00, 0xa7, 0x37,  2, ARG_NONE,   0, NA_T },
+    { /* CC */          docmd_cc,          "CC",                  0x00, 0x00, 0xa7, 0x38,  2, ARG_NONE,   0, NA_T },
+    { /* C_T */         docmd_c_t,         "C?",                  0x00, 0x00, 0xa7, 0x39,  2, ARG_NONE,   0, NA_T },
+    { /* N_TO_BS */     docmd_n_to_bs,     "N\17BS",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x01 },
+    { /* N_TO_BD */     docmd_n_to_bd,     "N\17BD",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x01 },
+    { /* N_TO_DS */     docmd_n_to_ds,     "N\17DS",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x01 },
+    { /* N_TO_DD */     docmd_n_to_dd,     "N\17DD",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x01 },
+    { /* N_TO_DQ */     docmd_n_to_dq,     "N\17DQ",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x01 },
+    { /* BS_TO_N */     docmd_bs_to_n,     "BS\17N",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x11 },
+    { /* BD_TO_N */     docmd_bd_to_n,     "BD\17N",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x11 },
+    { /* DS_TO_N */     docmd_ds_to_n,     "DS\17N",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x11 },
+    { /* DD_TO_N */     docmd_dd_to_n,     "DD\17N",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x11 },
+    { /* DQ_TO_N */     docmd_dq_to_n,     "DQ\17N",              0x00, 0x00, 0x00, 0x00,  4, ARG_NONE,   1, 0x11 },
     { /* WSIZE */       docmd_wsize,       "WSIZE",               0x00, 0x00, 0xa7, 0xd3,  5, ARG_NONE,   1, 0x01 },
     { /* WSIZE_T */     docmd_wsize_t,     "WS\311Z\305?",        0x00, 0x00, 0xa7, 0xd4,  6, ARG_NONE,   0, NA_T },
     { /* BSIGNED */     docmd_bsigned,     "BS\311GN\305\304",    0x00, 0x00, 0xa7, 0xd6,  7, ARG_NONE,   0, NA_T },
     { /* BWRAP */       docmd_bwrap,       "BWR\301P",            0x00, 0x00, 0xa7, 0xd7,  5, ARG_NONE,   0, NA_T },
     { /* BRESET */      docmd_breset,      "BR\305S\305T",        0x00, 0x00, 0xa7, 0xd8,  6, ARG_NONE,   0, NA_T },
+    { /* DECINT */      docmd_decint,      "DECINT",              0x00, 0x00, 0xa7, 0x3a,  6, ARG_NONE,   0, NA_T },
+    { /* BINSEP */      docmd_binsep,      "BINSEP",              0x00, 0x00, 0xa7, 0x3b,  6, ARG_NONE,   0, NA_T },
+    { /* OCTSEP */      docmd_octsep,      "OCTSEP",              0x00, 0x00, 0xa7, 0x3c,  6, ARG_NONE,   0, NA_T },
+    { /* DECSEP */      docmd_decsep,      "DECSEP",              0x00, 0x00, 0xa7, 0x3d,  6, ARG_NONE,   0, NA_T },
+    { /* HEXSEP */      docmd_hexsep,      "HEXSEP",              0x00, 0x00, 0xa7, 0x3e,  6, ARG_NONE,   0, NA_T },
 
     /* Useful X-Fcn functions missing from the 42S */
     { /* ANUM */        docmd_anum,        "ANUM",                0x00, 0x00, 0xa6, 0x42,  4, ARG_NONE,   0, NA_T },
