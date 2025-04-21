@@ -1009,7 +1009,7 @@ static int rn(bool left, bool c) {
     int wsize = effective_wsize();
     if (nn >= wsize + 1)
         return ERR_INVALID_DATA;
-    int n = (int) nn;
+    int n = to_int(nn);
     int8 xx;
     int err = get_base_param(stack[sp - 1], &xx);
     if (err != ERR_NONE)
@@ -1017,7 +1017,19 @@ static int rn(bool left, bool c) {
     uint8 x = xx;
     if (n != 0) {
         if (c) {
-            return ERR_NOT_YET_IMPLEMENTED;
+            if (left) {
+                bool carry = (x >> (wsize - n)) & 1;
+                int s = wsize - n + 1;
+                uint8 t = s == 64 ? 0 : x >> s;
+                x = (x << n) | t | (((uint8) flags.f.f20) << (n - 1));
+                flags.f.f20 = carry;
+            } else {
+                bool carry = (x >> (n - 1)) & 1;
+                int s = wsize - n + 1;
+                uint8 t = s == 64 ? 0 : x << s;
+                x = (x >> n) | t | (((uint8) flags.f.f20) << (wsize - n));
+                flags.f.f20 = carry;
+            }
         } else {
             if (left) {
                 x = (x << n) | (x >> (wsize - n));
@@ -1060,7 +1072,7 @@ static int bit(int op) {
     int wsize = effective_wsize();
     if (x >= wsize)
         return ERR_INVALID_DATA;
-    int n = (int) x;
+    int n = to_int(x);
     int8 mask = 1LL << n;
     int8 f;
     int err = get_base_param(stack[sp - 1], &f);
@@ -1123,7 +1135,7 @@ static int make_mask(bool left) {
     int wsize = effective_wsize();
     if (x >= wsize + 1)
         return ERR_INVALID_DATA;
-    int n = (int) x;
+    int n = to_int(x);
     int8 res;
     if (n == 64)
         res = -1;
