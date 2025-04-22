@@ -656,10 +656,10 @@ const menu_spec menus[] = {
     { /* MENU_BASE_DISP */ MENU_BASE5, MENU_NONE, MENU_NONE,
                       { { 0x2000 + CMD_DECINT, 0, "" },
                         { 0x1000 + CMD_NULL,   0, "" },
-                        { 0x2000 + CMD_BINSEP, 0, "" },
-                        { 0x2000 + CMD_OCTSEP, 0, "" },
+                        { 0x2000 + CMD_HEXSEP, 0, "" },
                         { 0x2000 + CMD_DECSEP, 0, "" },
-                        { 0x2000 + CMD_HEXSEP, 0, "" } } },
+                        { 0x2000 + CMD_OCTSEP, 0, "" },
+                        { 0x2000 + CMD_BINSEP, 0, "" } } },
     { /* MENU_SOLVE */ MENU_NONE, MENU_NONE, MENU_NONE,
                       { { 1,                   1, "=" },
                         { 0x1000 + CMD_MVAR,   0, ""  },
@@ -1189,8 +1189,8 @@ bool no_keystrokes_yet;
  * Version 49: 1.2.6  EQN PRGM mode handling
  * Version 50: 1.2.7  Stand-alone equation editing
  * Version 51: 1.2.8  Move BASE settings from MODES to BASE
- * Version 52: 1.2.9  BASE enhancements (menu additions)
- * Version 53: 1.2.9  BASE enhancements (carry; display modes)
+ * Version 52: 1.3    BASE enhancements (menu additions)
+ * Version 53: 1.3    BASE enhancements (carry; display modes)
  */
 #define PLUS42_VERSION 53
 

@@ -1034,13 +1034,15 @@ int phloat2string(phloat pd, char *buf, int buflen, int base_mode, int digits,
     /* base_mode: 0=only decimal, 1=all bases, 2=SHOW */
     int base = get_base();
     int wsize = effective_wsize();
-    if (base_mode == 1 && base != 10
-            || base_mode == 2 && (base == 2
-                               || base == 8 && disp_r == 2 && (disp_c - 2) * 3 < wsize)) {
+    if (base_mode == 1
+            && (base != 10 || mode_dec_int && mode_appmenu >= MENU_BASE1 && mode_appmenu <= MENU_BASE_DISP)
+        || base_mode == 2
+            && (base == 2 || base == 8 && wsize > 60)) {
+
         uint8 n;
         int inexact, shift;
         bool too_big = false;
-        char binbuf[64];
+        char binbuf[80];
         int binbufptr = 0;
 
         phloat high, low;
@@ -1096,23 +1098,56 @@ int phloat2string(phloat pd, char *buf, int buflen, int base_mode, int digits,
         if (wsize < 64)
             n &= (1ULL << wsize) - 1;
 
-        uint8 mask;
-        mask = disp_r * disp_c >= 64 ? 0 : (uint8) (-1LL << (disp_r * disp_c));
-        if (inexact)
-            mask <<= 1;
-        if (too_big)
-            mask <<= 1;
-        if (base_mode == 2 && base == 2 && (n & mask) != 0) {
-            // Too many bits; won't fit. Use hex instead.
-            string2buf(buf, buflen, &chars_so_far, "hex ", 4);
-            base = 16;
+        if (base_mode == 2 && base == 2) {
+            int maxbits = disp_r * disp_c;
+            if (mode_bin_sep)
+                maxbits = ((maxbits + 1) * 4) / 5;
+            if (inexact)
+                maxbits--;
+            if (too_big)
+                maxbits--;
+            int8 mask = maxbits >= 64 ? 0 : -1LL << maxbits;
+            if ((n & mask) != 0) {
+                // Too many bits; won't fit. Use hex instead.
+                string2buf(buf, buflen, &chars_so_far, "hex ", 4);
+                base = 16;
+            }
         }
-        shift = base == 2 ? 1 : base == 8 ? 3 : 4;
-        while (n != 0) {
-            int digit = (int) (n & (base - 1));
-            char c = digit < 10 ? '0' + digit : 'A' + digit - 10;
-            binbuf[binbufptr++] = c;
-            n >>= shift;
+        if (base == 10) {
+            bool sign = false;
+            if (flags.f.base_signed) {
+                uint8 s = 1ULL << (wsize - 1);
+                if ((n & s) != 0) {
+                    sign = true;
+                    n = ~n + 1;
+                }
+            }
+            int p = 0;
+            while (n != 0) {
+                if (mode_dec_sep && ++p == 4) {
+                    binbuf[binbufptr++] = sep;
+                    p = 1;
+                }
+                int digit = n % 10;
+                binbuf[binbufptr++] = '0' + digit;
+                n /= 10;
+            }
+            if (sign)
+                binbuf[binbufptr++] = '-';
+        } else {
+            shift = base == 2 ? 1 : base == 8 ? 3 : 4;
+            bool do_sep = base == 2 ? mode_bin_sep : base == 8 ? mode_oct_sep : mode_hex_sep;
+            int p = 0;
+            while (n != 0) {
+                if (do_sep && ++p == 5) {
+                    binbuf[binbufptr++] = ' ';
+                    p = 1;
+                }
+                int digit = (int) (n & (base - 1));
+                char c = digit < 10 ? '0' + digit : 'A' + digit - 10;
+                binbuf[binbufptr++] = c;
+                n >>= shift;
+            }
         }
         if (binbufptr == 0)
             binbuf[binbufptr++] = '0';
